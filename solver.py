@@ -3,8 +3,11 @@
 import random
 import argparse
 
+DEFAULT_MIN_SIMILARITY_SCORE = 3
+
 parser = argparse.ArgumentParser(description="Fallout computer hack utility. Plays games, shows similarity stats between words and solves given puzzles.")
 parser.add_argument("--stat", action="store_true", help="Shows stats about words. Produces a grid showing similarity scores between each pair of words.")
+parser.add_argument("--depth", type=int, default=DEFAULT_MIN_SIMILARITY_SCORE, help="Minimum similarity score to show in stat table.")
 
 choices = "cleanse,grouped,gaining,wasting,dusters,letting,endings,fertile,seeking,certain,bandits,stating,wanting,parties,waiting,station,maltase,monster"
 choices = choices.upper()
@@ -13,11 +16,12 @@ choices = choices.split(",")
 # make a copy of the list before it's suffled so
 # we have something consistant to work with for stats
 constant_choices = choices[:]
+constant_choices.sort()
 
 # shuffle the other list so the choices are srambled each time.
 random.shuffle(choices)
 
-def grid_similarity():
+def grid_similarity(min_similarity):
   key = "ABCDEFGHIJKLMNOPQR" 
   for i, choice in enumerate(constant_choices):
     print "%s %s" % (key[i], choice)
@@ -32,7 +36,7 @@ def grid_similarity():
         symbol = "-"
       elif score == len(c1):
         symbol = "="
-      elif score > 3:
+      elif score > min_similarity:
         symbol = str(score)
       else:
         symbol = "."
@@ -89,7 +93,7 @@ def play_game():
 def main():
   args = parser.parse_args()
   if args.stat:
-    grid_similarity()
+    grid_similarity(args.depth)
   else:
     play_game()
 
