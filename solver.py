@@ -136,53 +136,58 @@ def play_game(cc):
     print "while system"
     print "is accessed."
 
+def do_knockout():
+  cc = choices
+  show_knockout(cc)
+
+  while True:
+    print
+    our_guess = raw_input("you guessed:").upper()
+
+    if our_guess == "Q":
+      import sys
+      sys.exit()
+
+    num_correct =   input("num correct:")
+
+    new_choices = []
+    for choice in cc:
+      sim_score = similarity(our_guess, choice)
+      if sim_score == num_correct:
+        new_choices.append(choice)
+
+    cc = new_choices
+    show_knockout(cc)
+
+def do_play(args):
+  if (args.fixeddict):
+    cc = choices
+  else:
+    words = "twl3.txt"
+    words = open(words).read().split("\n")
+    words = [word.upper() for word in words]
+    words = [word for word in words if len(word) > 5]
+
+    dd = defaultdict(list)
+    for word in words:
+      dd[len(word)].append(word)
+
+    cc = []
+    for i in range(args.choices):
+      choice = random.choice(dd[args.wordlength])
+      cc.append(choice)
+
+  play_game(cc)
+
 def main():
   args = parser.parse_args()
   if args.stat:
     grid_similarity(args.depth)
   elif args.knockout:
-    cc = choices
-    show_knockout(cc)
-
-    while True:
-      print
-      our_guess = raw_input("you guessed:").upper()
-
-      if our_guess == "Q":
-        import sys
-        sys.exit()
-
-      num_correct =   input("num correct:")
-
-      new_choices = []
-      for choice in cc:
-        sim_score = similarity(our_guess, choice)
-        if sim_score == num_correct:
-          new_choices.append(choice)
-
-      cc = new_choices
-      show_knockout(cc)
-
+    do_knockout()
   elif args.solve:
     pass
   else:
-    if (args.fixeddict):
-      cc = choices
-    else:
-      words = "twl3.txt"
-      words = open(words).read().split("\n")
-      words = [word.upper() for word in words]
-      words = [word for word in words if len(word) > 5]
-
-      dd = defaultdict(list)
-      for word in words:
-        dd[len(word)].append(word)
-
-      cc = []
-      for i in range(args.choices):
-        choice = random.choice(dd[args.wordlength])
-        cc.append(choice)
-
-    play_game(cc)
+    do_play(args)
 
 main()
