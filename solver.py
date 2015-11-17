@@ -11,7 +11,11 @@ parser.add_argument("--stat", action="store_true", help="Shows stats about words
 parser.add_argument("--solve", action="store_true", help="Solves the puzzle with default words.")
 parser.add_argument("--knockout", action="store_true", help="Shows knockout table.")
 parser.add_argument("--depth", type=int, default=DEFAULT_MIN_SIMILARITY_SCORE, help="Minimum similarity score to show in stat table.")
+parser.add_argument("--fixeddict", action="store_true", help="Use a small fixed dictionary.")
+parser.add_argument("--choices", type=int, default=20, help="Number of words to play with.")
+parser.add_argument("--wordlength", type=int, default=6, help="Length of words to play with.")
 
+# a small dictionary of choices
 choices = "cleanse,grouped,gaining,wasting,dusters,letting,endings,fertile,seeking,certain,bandits,stating,wanting,parties,waiting,station,maltase,monster"
 choices = choices.upper()
 choices = choices.split(",")
@@ -87,8 +91,8 @@ def show_knockout(cc):
   for guess in knockout:
     print guess, len(knockout[guess])
 
-def show_choices():
-  for choice in choices:
+def show_choices(cc):
+  for choice in cc:
     print choice
 
 def similarity(guess, answer):
@@ -98,18 +102,18 @@ def similarity(guess, answer):
       similar += 1
   return similar
 
-def play_game():
-  answer = random.choice(choices)
+def play_game(cc):
+  answer = random.choice(cc)
   guess = None
   attempts = 4
 
-  show_choices()
+  show_choices(cc)
 
   while guess != answer and attempts > 0:
     guess = raw_input(">").upper()
     attempts -= 1
     
-    if guess not in choices:
+    if guess not in cc:
       print ">Incorrect input."
 
     if guess == answer:
@@ -162,6 +166,23 @@ def main():
   elif args.solve:
     pass
   else:
-    play_game()
+    if (args.fixeddict):
+      cc = choices
+    else:
+      words = "twl3.txt"
+      words = open(words).read().split("\n")
+      words = [word.upper() for word in words]
+      words = [word for word in words if len(word) > 5]
+
+      dd = defaultdict(list)
+      for word in words:
+        dd[len(word)].append(word)
+
+      cc = []
+      for i in range(args.choices):
+        choice = random.choice(dd[args.wordlength])
+        cc.append(choice)
+
+    play_game(cc)
 
 main()
