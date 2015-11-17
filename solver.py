@@ -137,14 +137,23 @@ def play_game(cc):
     print "is accessed."
 
 def do_knockout():
-  cc = choices
+  print "paste choices:"
+  cc = []
+
+  while True:
+    line = raw_input().upper()
+    if line.strip() == "":
+      break
+    else:
+      cc.append(line)
+
   show_knockout(cc)
 
   while True:
     print
     our_guess = raw_input("you guessed:").upper()
 
-    if our_guess == "Q":
+    if not our_guess or out_guess == "Q":
       import sys
       sys.exit()
 
