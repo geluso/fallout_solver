@@ -159,18 +159,22 @@ def do_knockout():
     cc = new_choices
     show_knockout(cc)
 
+def build_dict():
+  words = "twl3.txt"
+  words = open(words).read().split("\n")
+  words = [word.upper() for word in words]
+  words = [word for word in words if len(word) > 5]
+
+  dd = defaultdict(list)
+  for word in words:
+    dd[len(word)].append(word)
+  return dd
+
 def do_play(args):
   if (args.fixeddict):
     cc = choices
   else:
-    words = "twl3.txt"
-    words = open(words).read().split("\n")
-    words = [word.upper() for word in words]
-    words = [word for word in words if len(word) > 5]
-
-    dd = defaultdict(list)
-    for word in words:
-      dd[len(word)].append(word)
+    dd = build_dict()
 
     cc = []
     for i in range(args.choices):
