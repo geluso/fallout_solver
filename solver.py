@@ -48,25 +48,42 @@ def grid_similarity(min_similarity):
     print line
   print
 
-def get_knockout():
+def get_knockout(cc):
+  # the knockout score represents the number of other choices knocked out
+  # using information from one guess. Consider the four choices given below.
+  #
+  # DEAD
+  # FEAR
+  # DOOR
+  # BAIT
+  #
+  # If we guess DEAD and the answer was FEAR we are told 2 characters are correct.
+  # Compare the similarity of DEAD to every other choice. If we know DEAD has a
+  # similarity of 2 with the correct against, we would be fools to make our second
+  # guess have less than 2 similar characters to DEAD itself.
+  # 
+  # sim(DEAD, DEAD) = 4
+  # sim(DEAD, FEAR) = 2
+  # sim(DEAD, DOOR) = 1
+  # sim(DEAD, BAIT) = 0
+
   knockout_score = defaultdict(list)
 
   # iterate over each guess
-  for guess in choices:
+  for guess in cc:
     # iterate over all other choices as if they were the correct answer
-    for possible_answer in choices:
+    for possible_answer in cc:
       answer_score = similarity(guess, possible_answer)
       # calculate the scores of every other choice as if it were the next guess
-      for next_guess in choices:
+      for next_guess in cc:
         next_guess_score = similarity(guess, next_guess)
-        # keep track of how many other choices have similarity scores equal to or higher than
-        # the current guess.
-        if next_guess_score >= answer_score:
+        # how many other choices have similarity exactly equal to the current guess.
+        if next_guess_score == answer_score:
           knockout_score[guess].append(next_guess)
   return knockout_score
 
-def show_knockout():
-  knockout = get_knockout()
+def show_knockout(cc):
+  knockout = get_knockout(cc)
   for guess in knockout:
     print guess, len(knockout[guess])
 
@@ -120,7 +137,28 @@ def main():
   if args.stat:
     grid_similarity(args.depth)
   elif args.knockout:
-    show_knockout()
+    cc = choices
+    show_knockout(cc)
+
+    while True:
+      print
+      our_guess = raw_input("you guessed:").upper()
+
+      if our_guess == "Q":
+        import sys
+        sys.exit()
+
+      num_correct =   input("num correct:")
+
+      new_choices = []
+      for choice in cc:
+        sim_score = similarity(our_guess, choice)
+        if sim_score == num_correct:
+          new_choices.append(choice)
+
+      cc = new_choices
+      show_knockout(cc)
+
   elif args.solve:
     pass
   else:
