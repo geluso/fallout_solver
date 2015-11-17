@@ -2,11 +2,14 @@
 
 import random
 import argparse
+from collections import defaultdict
 
 DEFAULT_MIN_SIMILARITY_SCORE = 3
 
 parser = argparse.ArgumentParser(description="Fallout computer hack utility. Plays games, shows similarity stats between words and solves given puzzles.")
 parser.add_argument("--stat", action="store_true", help="Shows stats about words. Produces a grid showing similarity scores between each pair of words.")
+parser.add_argument("--solve", action="store_true", help="Solves the puzzle with default words.")
+parser.add_argument("--knockout", action="store_true", help="Shows knockout table.")
 parser.add_argument("--depth", type=int, default=DEFAULT_MIN_SIMILARITY_SCORE, help="Minimum similarity score to show in stat table.")
 
 choices = "cleanse,grouped,gaining,wasting,dusters,letting,endings,fertile,seeking,certain,bandits,stating,wanting,parties,waiting,station,maltase,monster"
@@ -44,6 +47,28 @@ def grid_similarity(min_similarity):
       line += " %s" % symbol
     print line
   print
+
+def get_knockout():
+  knockout_score = defaultdict(list)
+
+  # iterate over each guess
+  for guess in choices:
+    # iterate over all other choices as if they were the correct answer
+    for possible_answer in choices:
+      answer_score = similarity(guess, possible_answer)
+      # calculate the scores of every other choice as if it were the next guess
+      for next_guess in choices:
+        next_guess_score = similarity(guess, next_guess)
+        # keep track of how many other choices have similarity scores equal to or higher than
+        # the current guess.
+        if next_guess_score >= answer_score:
+          knockout_score[guess].append(next_guess)
+  return knockout_score
+
+def show_knockout():
+  knockout = get_knockout()
+  for guess in knockout:
+    print guess, len(knockout[guess])
 
 def show_choices():
   for choice in choices:
@@ -94,6 +119,10 @@ def main():
   args = parser.parse_args()
   if args.stat:
     grid_similarity(args.depth)
+  elif args.knockout:
+    show_knockout()
+  elif args.solve:
+    pass
   else:
     play_game()
 
