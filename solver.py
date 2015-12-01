@@ -9,7 +9,6 @@ DEFAULT_MIN_SIMILARITY_SCORE = 3
 parser = argparse.ArgumentParser(description="Fallout computer hack utility. Plays games, shows similarity stats between words and solves given puzzles.")
 parser.add_argument("--stat", action="store_true", help="Shows stats about words. Produces a grid showing similarity scores between each pair of words.")
 parser.add_argument("--solve", action="store_true", help="Solves the puzzle with default words.")
-parser.add_argument("--knockout", action="store_true", help="Shows knockout table.")
 parser.add_argument("--depth", type=int, default=DEFAULT_MIN_SIMILARITY_SCORE, help="Minimum similarity score to show in stat table.")
 parser.add_argument("--fixeddict", action="store_true", help="Use a small fixed dictionary.")
 parser.add_argument("--choices", type=int, default=20, help="Number of words to play with.")
@@ -86,10 +85,21 @@ def get_knockout(cc):
           knockout_score[guess].append(next_guess)
   return knockout_score
 
-def show_knockout(cc):
+def get_best_guess(cc):
   knockout = get_knockout(cc)
+
+  # start with the first word and try to beat that
+  best_guess = knockout.keys()[0]
+  best_score = len(knockout[best_guess])
+
+  # shows the scores for all the guesses
   for guess in knockout:
-    print guess, len(knockout[guess])
+    score = len(knockout[guess])
+    if score < best_score:
+      best_guess = guess
+      best_score = score
+
+  return best_guess
 
 def show_choices(cc):
   for choice in cc:
@@ -136,7 +146,7 @@ def play_game(cc):
     print "while system"
     print "is accessed."
 
-def do_knockout():
+def do_solve():
   print "paste choices:"
   cc = []
 
@@ -147,26 +157,19 @@ def do_knockout():
     else:
       cc.append(line)
 
-  show_knockout(cc)
-
   while True:
+    guess = get_best_guess(cc)
+
     print
-    our_guess = raw_input("you guessed:").upper()
-
-    if not our_guess or out_guess == "Q":
-      import sys
-      sys.exit()
-
-    num_correct =   input("num correct:")
+    print "Best guess:", guess
+    num_correct = input("num correct:")
 
     new_choices = []
     for choice in cc:
-      sim_score = similarity(our_guess, choice)
+      sim_score = similarity(guess, choice)
       if sim_score == num_correct:
         new_choices.append(choice)
-
     cc = new_choices
-    show_knockout(cc)
 
 def build_dict():
   words = "twl3.txt"
@@ -196,10 +199,8 @@ def main():
   args = parser.parse_args()
   if args.stat:
     grid_similarity(args.depth)
-  elif args.knockout:
-    do_knockout()
   elif args.solve:
-    pass
+    do_solve()
   else:
     do_play(args)
 
